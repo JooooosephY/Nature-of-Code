@@ -1,7 +1,6 @@
 const C_GRAVITY = 1;
 const C_FRICTION = 10;
 const C_RESISTANCE_AIR = 0.05;
-const C_RESISTANCE_WATER = 0.70;
 const C_WALL = 0.95;
 const C_FLOOR = 1.02;
 
@@ -109,4 +108,3 @@ class Particle {
     pop();
   }
 }
-                                 
