@@ -7,7 +7,6 @@ let count = 0;
 
 function preload(){
   tree = loadImage("lemon-tree.png");
-  ground = loadImage("ground.png");
 }
 
 function setup() {
