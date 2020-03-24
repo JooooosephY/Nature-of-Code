@@ -6,8 +6,6 @@ let mode = 0;
 let st;
 let ct;
 
-
-
 // JSON
 let params = {
   colorR: 255,
@@ -30,7 +28,7 @@ gui.add(params, 'collision').min(1).max(10).step(0.1);
 
 function preload(){
   st = loadImage("Shinra tensei.png");
-  ct = loadImage("Chibaku_Tensei.png")
+  ct = loadImage("Chibaku_Tensei.png");
 }
 
 
@@ -40,15 +38,16 @@ function setup() {
 }
 
 function draw() {
+  // display the skill name
   textSize(40);
   if (mode == 0){
     background(ct);
     fill(255);
-    text("Chibaku Tensei", 20, 40);
+    text("Skill: Chibaku Tensei", 20, 40);
   }else{
     background(st);
     fill(0);
-    text("Shinra tensei", 20, 40);
+    text("Skill: Shinra tensei", 20, 40);
   }
 
   origin = new Core(mouseX, mouseY, params.mass);
@@ -67,30 +66,25 @@ function draw() {
 
   for(let a=0; a<particles.length; a++) {
     let p = particles[a];
+
     for (let b=0; b<particles.length; b++) {
       let other = particles[b];
       if (a != b) {
         p.checkCollision( other );
-        // p.applyGAttraction( other );
       }
     }
-    if (mode == 0){
+
+    if (mode == 0){ // Chibaku Tensei
       p.applyGAttraction(origin);
-    }else{
+    }else{ //Shinra Tensei
       p.applyRepulsion(origin);
     }
     p.checkCollision(origin);
     origin.checkCollision(p);
 
-    if (p.coalesce){
-      origin.updatemass(p);
-      particles.splice(a, 1);
-    }
-
     p.checkEdges();
     p.update();
     p.display();
-
 
   }
 
@@ -100,6 +94,7 @@ function draw() {
 
 }
 
+// change the skill
 function keyPressed(){
   if (key == ' '){
     if (mode == 0){
@@ -110,6 +105,7 @@ function keyPressed(){
   }
 }
 
+// generate more particles
 function mouseClicked() {
   let p = new Particle(random(width), random(height), random(3, 8) );
   p.vel = createVector(random(-3, 3), random(-3, 3));
@@ -124,7 +120,6 @@ class Particle {
     this.acc = createVector();
     this.mass = m;
     this.rad = m;
-    this.coalesce = false;
   }
 
   checkCollision(other) {
@@ -135,7 +130,7 @@ class Particle {
       let force = createVector();
       if (other == origin){
 
-        let gMag = (C_GRAVITY * this.mass * other.mass) / (distance * distance); // mag
+        let gMag = (C_GRAVITY * this.mass * other.mass) / (distance * distance);
         force = vector.copy();
         force.mult(-1);
         force.normalize();
@@ -245,10 +240,6 @@ class Core {
       other.applyForce( force );
 
     }
-  }
-
-  updatemass(other){
-    this.mass ++;
   }
 
   display() {
