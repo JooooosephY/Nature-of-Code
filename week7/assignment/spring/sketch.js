@@ -14,7 +14,6 @@ let params = {
 const gui = new dat.GUI();
 
 gui.add(params, 'k').max(5).min(0).step(0.1);
-gui.add(params, 'C_gravity').max(5).min(0).step(0.1);
 gui.add(params, 'len').max(300).min(1).step(1);
 gui.add(params, 'm').max(40).min(1).step(1);
 gui.add(params, 'gravity');
@@ -72,6 +71,7 @@ function mouseClicked(){
     let distance = vector.mag();
     springs.push(new Spring(balls[balls.length - 1], balls[balls.length - 2], distance));
   }else{
+    
     balls.push(new Ball(mouseX, mouseY, params.m, 255, 255, 255));
     springs.push(new Spring(centerball, balls[balls.length - 1], params.len));
     let ball = balls[balls.length - 1];
