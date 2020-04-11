@@ -9,6 +9,11 @@ let waves = [];
 let max = 10;
 let count = 0;
 let cracked = false;
+let bg = 0;
+
+let sy = 500;
+let my = 1000;
+let speed = 1;
 
 let wind;
 let rain;
@@ -20,7 +25,7 @@ let water;
 // JSON
 let params = {
   temperature: -10,
-  wind: 0.05,
+  wind: 0.1,
   size: 40,
   amp: 0.4,
   freq: 0.017,
@@ -53,7 +58,6 @@ function preload() {
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  background(0);
 
   for (let i=0; i<sinResolution; i++) {
     let angle = map(i, 0, sinResolution, 0, TWO_PI);
@@ -73,202 +77,282 @@ function setup() {
 }
 
 function draw() {
-  background(0);
+  background(bg);
+  // natural settings
+  push();
 
-  // play the sound effect of the wind
-  if (params.wind != 0){
-    wind.setVolume(map(abs(params.wind), 0, 0.5, 0.05, 0.8));
-    if(!wind.isPlaying()){
-      wind.play();
-    }
-  }else{
-    if ( wind.isPlaying()){
-      wind.stop();
-    }
+  if ((sy > 0) && (sy < 500)) {
+    bg = map(sy, 0, 500, 170, 0);
   }
 
-  // play the sound effect of the rain and water
-  if (params.temperature > 0){
-    // water sound
-    if(!water.isPlaying()){
-      water.setVolume(0.2);
-      water.play();
-    }
-    // rain sound
-    rain.setVolume(map(rains.length, 0, 800, 0.05, 0.6));
-    if (!rain.isPlaying()){
-      rain.play();
-    }
-  }else{
-    if (rain.isPlaying()){
-      rain.stop();
-    }
-    if (water.isPlaying()){
-      water.stop();
-    }
+  if ((sy > -555) && (sy < 0)) {
+    bg = map(sy, -555, 0, 0, 170);
   }
 
+  //SUN
+  fill (255, 240,102);
+  noStroke();
+  ellipse (310, sy, 100, 100);
+
+  sy = sy - speed
+
+  if (sy <= -555){
+   sy = 500;
+  }
+
+//MOON
+  fill (240);
+  noStroke();
+  ellipse (310, my, 100, 100);
+
+  my = my - speed;
+
+  if (my <= -555){
+   my = 500;
+  }
+
+  //MOUNTAINS
+  //further mountain
+  fill(91, 71, 110);
+  noStroke();
+  triangle(460, 230, 860, 600, 60, 600);
+
+  fill(213, 212, 255);
+  strokeWeight(0);
+  beginShape();
+  vertex(460, 230);
+  vertex(585, 346);
+  vertex(490, 300);
+  vertex(460, 350);
+  vertex(420, 317);
+  vertex(325, 355);
+  endShape(CLOSE);
+
+  //closer one
+  fill(174, 139, 222);
+  noStroke();
+  triangle(200, 280, 600, 600, -160, 600);
+
+  fill(231, 241, 255);
+  strokeWeight(0);
+  beginShape();
+  vertex(200, 280);
+  vertex(325, 380);
+  vertex(245, 350);
+  vertex(220, 390);
+  vertex(170, 360);
+  vertex(80, 386);
+  endShape(CLOSE);
+
+  // //HILLS
+  fill(60, 145, 57);
+  ellipse(100, height - 50, 800, 400);
+  ellipse(width/2, height - 50, 800, 400);
+
+  fill(69, 168, 66);
+  ellipse(width * 0.35, height - 50, 800, 400);
+  ellipse(width * 0.8, height - 50, 800, 400);
+
+  pop();
 
 
+
+// play the sound effect of the wind
+if (params.wind != 0){
+  wind.setVolume(map(abs(params.wind), 0, 0.5, 0.05, 0.8));
+  if(!wind.isPlaying()){
+    wind.play();
+  }
+}else{
+  if ( wind.isPlaying()){
+    wind.stop();
+  }
+}
+
+// play the sound effect of the rain and water
+if (params.temperature > 0){
+  // water sound
+  if(!water.isPlaying()){
+    water.setVolume(0.2);
+    water.play();
+  }
+  // rain sound
+  rain.setVolume(map(rains.length, 0, 800, 0.05, 0.6));
+  if (!rain.isPlaying()){
+    rain.play();
+  }
+}else{
+  if (rain.isPlaying()){
+    rain.stop();
+  }
+  if (water.isPlaying()){
+    water.stop();
+  }
+}
+
+
+// generate rain and snow
+if (params.temperature <= 0){
+  let m = max + params.temperature;
+  if (m < 0){
+    for ( let i = 0; i < (-m) / 3; i ++){
+      snows.push(new Snow(random(width), random(-50, 0), random(2,4)));
+    }
+  }else{
+    if (count == 0){
+      snows.push(new Snow(random(width), random(-50, 0), random(2,4)));
+      count ++;
+    }else{
+      count ++;
+      if (count > m){
+        count = 0;
+      }
+    }
+  }
+}else{
+  let m = max - params.temperature;
+  if (m < 0){
+    for ( let i = 0; i < (-m) / 8; i ++){
+      rains.push(new Rain(random(width), random(-50, 0), random(5,8)));
+    }
+  }else{
+    if (count == 0){
+      rains.push(new Rain(random(width), random(-50, 0), random(5,8)));
+      count ++;
+    }else{
+      count ++;
+      if (count > m){
+        count = 0;
+      }
+    }
+  }
+}
+
+// display waves
+for (let i = 0; i < waves.length; i ++){
+  let w = waves[i];
+
+  w.update();
+  w.display();
+}
+
+// display rains
+for (let i = 0; i < rains.length; i ++){
+  let r = rains[i];
+
+  // gravity
+  let gravity = createVector(0, C_GRAVITY * r.mass);
+  r.applyForce( gravity );
+
+  // resistance
+  let resistance = p5.Vector.mult(r.vel, -1);
+  resistance.mult(0.1);
+  r.applyForce( resistance );
+
+  // wind force
+  let wind = createVector(params.wind, 0);
+  r.applyForce( wind );
+
+  r.update();
+  r.checkEdges( waves );
+  r.display();
+}
+
+// remove the rains which are done
+for (let i = rains.length - 1; i >= 0; i --){
+  let r = rains[i];
+  if(r.isDone){
+    rains.splice(i, 1);
+  }
+}
+
+// display snows
+for (let i = 0; i < snows.length; i ++){
+  let s = snows[i];
+
+  // gravity
+  let gravity = createVector(0, C_GRAVITY * s.mass);
+  s.applyForce( gravity );
+
+  // resistance
+  let resistance = p5.Vector.mult(s.vel, -1);
+  resistance.mult(0.1);
+  s.applyForce( resistance );
+
+  // wind force
+  let wind = createVector(params.wind, 0);
+  s.applyForce( wind );
+
+  s.update();
+  s.checkEdges( waves );
+  s.display();
+}
+
+// remove the snows which are done
+for (let i = snows.length - 1; i >= 0; i --){
+  let s = snows[i];
+  if(s.isDone){
+    snows.splice(i, 1);
+  }
+}
+
+// update and display snowflakes
+for (let i =0; i < snowflakes.length; i ++){
+  let f = snowflakes[i];
   if (params.temperature <= 0){
-    let m = max + params.temperature;
-    if (m < 0){
-      for ( let i = 0; i < (-m) / 3; i ++){
-        snows.push(new Snow(random(width), random(-50, 0), random(2,4)));
-      }
-    }else{
-      if (count == 0){
-        snows.push(new Snow(random(width), random(-50, 0), random(2,4)));
-        count ++;
-      }else{
-        count ++;
-        if (count > m){
-          count = 0;
-        }
-      }
+    cracked = false;
+    if (f.updating){
+      f.update();
     }
-  }else{
-    let m = max - params.temperature;
-    if (m < 0){
-      for ( let i = 0; i < (-m) / 8; i ++){
-        rains.push(new Rain(random(width), random(-50, 0), random(5,8)))
-      }
-    }else{
-      if (count == 0){
-        rains.push(new Rain(random(width), random(-50, 0), random(5,8)))
-        count ++;
-      }else{
-        count ++;
-        if (count > m){
-          count = 0;
-        }
-      }
-    }
-  }
-
-  // display waves
-  for (let i = 0; i < waves.length; i ++){
-    let w = waves[i];
-
-    w.update();
-    w.display();
-  }
-
-  // display rains
-  for (let i = 0; i < rains.length; i ++){
-    let r = rains[i];
-
-    // gravity
-    let gravity = createVector(0, C_GRAVITY * r.mass);
-    r.applyForce( gravity );
-
-    // resistance
-    let resistance = p5.Vector.mult(r.vel, -1);
-    resistance.mult(0.1);
-    r.applyForce( resistance );
-
-    // wind force
-    let wind = createVector(params.wind, 0);
-    r.applyForce( wind );
-
-    r.update();
-    r.checkEdges( waves );
-    r.display();
-  }
-
-  // remove the snows which are done
-  for (let i = rains.length - 1; i >= 0; i --){
-    let r = rains[i];
-    if(r.isDone){
-      rains.splice(i, 1);
-    }
-  }
-
-  // display snows
-  for (let i = 0; i < snows.length; i ++){
-    let s = snows[i];
-
-    // gravity
-    let gravity = createVector(0, C_GRAVITY * s.mass);
-    s.applyForce( gravity );
-
-    // resistance
-    let resistance = p5.Vector.mult(s.vel, -1);
-    resistance.mult(0.1);
-    s.applyForce( resistance );
-
-    // wind force
-    let wind = createVector(params.wind, 0);
-    s.applyForce( wind );
-
-    s.update();
-    s.checkEdges( waves );
-    s.display();
-  }
-
-  // remove the snows which are done
-  for (let i = snows.length - 1; i >= 0; i --){
-    let s = snows[i];
-    if(s.isDone){
-      snows.splice(i, 1);
-    }
-  }
-
-  // update and display snowflakes
-  for (let i =0; i < snowflakes.length; i ++){
-    let f = snowflakes[i];
-    if (params.temperature <= 0){
-      cracked = false;
-      if (f.updating){
-        f.update();
-      }
-      if (f.moving){
-        f.move();
-        if (f.particles.length == 0){
-          snowflakes.splice(i,1);
-        }
-      }else{
-        f.display();
-      }
-    }else{
-      if (!cracked && !cracking_ice.isPlaying()){
-        cracking_ice.setVolume(0.2);
-        cracking_ice.play();
-      }
-      cracked = true;
-      f.moving = true;
+    if (f.moving){
       f.move();
       if (f.particles.length == 0){
         snowflakes.splice(i,1);
       }
+    }else{
+      f.display();
+    }
+  }else{
+    if (!cracked && !cracking_ice.isPlaying()){
+      cracking_ice.setVolume(0.2);
+      cracking_ice.play();
+    }
+    cracked = true;
+    f.moving = true;
+    f.move();
+    if (f.particles.length == 0){
+      snowflakes.splice(i,1);
     }
   }
+}
 
 
 
-  // limit the number of the snows
-  while(snows.length > 800){
-    snows.splice(0, 1);
-  }
+// limit the number of the snows
+while(snows.length > 800){
+  snows.splice(0, 1);
+}
 
-  // limit the number of the rainss
-  while(rains.length > 800){
-    rains.splice(0, 1);
-  }
+// limit the number of the rainss
+while(rains.length > 800){
+  rains.splice(0, 1);
+}
 
-  // debug mode
-  if(params.debug_mode){
-    fill(255);
-    text("Snow number: " + snows.length, 10, 20);
-    text("Rain number: " + rains.length, 10, 40);
-    text("FrameRate: " + Math.floor(frameRate()), 10, 60);
-  }
+// debug mode
+if(params.debug_mode){
+  fill(255);
+  text("Snow number: " + snows.length, 10, 20);
+  text("Rain number: " + rains.length, 10, 40);
+  text("FrameRate: " + Math.floor(frameRate()), 10, 60);
+}
 
 }
 
 function mouseClicked(){
   if (params.temperature <= 0){
     let generated = true;
+
+    // check whether overlaps other snow flakes
     for (let i = 0; i < snowflakes.length; i ++){
       let s = snowflakes[i];
       if(dist(mouseX, mouseY, s.pos.x, s.pos.y) < s.size){
@@ -278,6 +362,8 @@ function mouseClicked(){
         cracking_ice.play();
       }
     }
+
+    // if not, generate one snowflake
     if (generated){
       snowflakes.push( new Snowflake(mouseX, mouseY));
       generating_ice.setVolume(0.2);
@@ -300,6 +386,7 @@ class Wave{
     this.yOffset = yOffset;
   }
 
+  // update the wave
   update(){
     let freq; // time, angle (+ position)
     let amp; // radDistance
@@ -320,6 +407,7 @@ class Wave{
     }
   }
 
+  // display the wave
   display(){
     if (params.temperature > 0){
       push();
@@ -380,6 +468,7 @@ class Snowflake{
     pop();
   }
 
+  // update the snowflake
   update(){
     let current = new Particle(this.size, 0, this.pos.x, this.pos.y);
 
@@ -395,6 +484,7 @@ class Snowflake{
     }
   }
 
+  // mvoe when clicked or temperature changed
   move(){
     if (this.moving){
       this.pos.add(this.vel);
@@ -424,7 +514,7 @@ class Snowflake{
         pop();
       }
 
-      // remove the snows which are done
+      // remove the particles which are done
       for (let i = this.particles.length - 1; i >= 0; i --){
         let p = this.particles[i];
         if(p.isDone){
@@ -436,6 +526,7 @@ class Snowflake{
 
 }
 
+// class snowflake Particle
 class Particle{
   constructor(x, y, cx, cy){
     this.pos = createVector(x, y);
@@ -534,6 +625,7 @@ class Particle{
     ellipse(0, 0, this.rad * 2, this.rad * 2);
     pop();
 
+    // debug_mode
     if (params.debug_mode){
       fill(255);
       text( int(this.lifeReduction * 1000), this.pos. x+10, this.pos. y);
@@ -606,6 +698,7 @@ class Snow {
     ellipse(0, 0, this.rad, this.rad);
     pop();
 
+    // debug_mode
     if (params.debug_mode){
       fill(255);
       text( int(this.lifeReduction * 1000), this.pos. x+10, this.pos. y);
@@ -683,6 +776,7 @@ class Rain{
   display() {
     push();
     translate(this.pos.x, this.pos.y);
+    // if the rain hit the edge, change the way it displays
     if (this.edge){
       if (this.frozen){
         fill(255, 500 * this.lifespan);
@@ -699,6 +793,7 @@ class Rain{
 
     pop();
 
+    // debug_mode
     if (params.debug_mode){
       fill(255);
       text( int(this.lifeReduction * 1000), this.pos. x+10, this.pos. y);
@@ -706,61 +801,3 @@ class Rain{
   }
 
 }
-
-// the way to display a snowflake
-// push();
-// translate(width/2, height/2);
-// rotate(PI/6);
-//
-// let current = new Particle(30, 0);
-//
-// while (!current.finished && !current.intersects(particles)){
-//   current.update();
-// }
-// particles.push(current);
-//
-// for (let i = 0; i < 6; i ++){
-//   rotate(PI/3);
-//
-//   for (let j = 0; j < particles.length; j ++){
-//     s = particles[j];
-//     s.show();
-//   }
-//
-//   push();
-//   scale(1, -1);
-//   for (let j = 0; j < particles.length; j ++){
-//     s = particles[j];
-//     s.show();
-//   }
-//   pop();
-// }
-// pop();
-//
-
-// wave function
-// function wave(yOffset, adjFreq, adjAmp, r, g, b) {
-//   let freq; // time, angle (+ position)
-//   let amp; // radDistance
-//
-//   for (let x = 0; x < width; x++) {
-//     let y = yOffset;
-//     if (params.temperature > 0){
-//       freq = x * 0.005 + frameCount * 0.01;
-//       amp = 20;
-//       sinForAmp = mSin(freq) * amp;
-//
-//       freq = x * adjFreq;
-//       amp = sinForAmp * adjAmp;
-//       let sinValue = mSin(freq) * amp;
-//
-//       y += sinValue;
-//     }
-//
-//     push();
-//     stroke(r, g, b);
-//     strokeWeight(2);
-//     line(x, height,x,y);
-//     pop();
-//   }
-// }
