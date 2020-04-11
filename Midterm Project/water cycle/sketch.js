@@ -177,7 +177,7 @@ function draw() {
       water.play();
     }
     // rain sound
-    rain.setVolume(map(rains.length, 0, 800, 0.05, 0.6));
+    rain.setVolume(map(rains.length, 0, 650, 0.05, 0.6));
     if (!rain.isPlaying()){
       rain.play();
     }
@@ -335,12 +335,12 @@ function draw() {
 
 
   // limit the number of the snows
-  while(snows.length > 800){
+  while(snows.length > 650){
     snows.splice(0, 1);
   }
 
   // limit the number of the rainss
-  while(rains.length > 800){
+  while(rains.length > 650){
     rains.splice(0, 1);
   }
 
