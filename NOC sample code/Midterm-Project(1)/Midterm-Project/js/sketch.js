@@ -1,543 +1,477 @@
-const C_GRAVITY = 4;
-let electrons = [];
-let protrons = [];
-let neutrons = [];
-let particles1 = [];
-let particles2 = [];
-let core;
-// let fade1, fade2;
-let stage = 0;
-let isDone = false;
-let debugMode = false;
-
-
-// JSON
-let params = {
-  attraction: 0.09,
-  adj:10,
-  debugMode:false,
-  angle:1,
-  range:0.2
-
-}
-const gui = new dat.GUI();
-gui.add(params, 'attraction',0.09,0.4);
-gui.add(params, 'adj',10,20);
-gui.add(params, 'debugMode');
-gui.add(params, 'angle',1,3);
-gui.add(params, 'range',0.2,0.5);
-
-function preload(){
-  soundFormats('mp3', 'ogg');
-  song1 = loadSound('assets/fade1.mp3');
-  song2 = loadSound('assets/fade2.mp3');
-  song1.setVolume(0.1);
-  song2.setVolume(0.1);
-}
+let particles = [];
+let pSystems = [];
+let belts1 = [];
+let belts2 = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
-  // fade1 = loadSong("fade1.mp3");
-  // fade2 = loadSong("fade2.mp3");
 
-  for (let i=0; i<80; i++) {
-    particles1.push( new Particle(random(width), random(height), random(1,2)) ); // play with the mass value!
+  // draw galaxy background
+  for (let i = 0; i < 500; i++) {
+    push();
+    let size = random(1,3);
+    fill(random(255),random(255),random(255),random(20,60));
+    ellipse(random(windowWidth),random(windowHeight),size * 2, size * 2);
+    pop();
   }
 
-  for (let i=0; i<600; i++) {
-    particles2.push( new Particle(random(width), random(height), random(1,2)) ); // play with the mass value!
+  pSystems.push( new ParticleSystem(0,0) );
+
+
+  for (let i = 0; i < pSystems.length; i++) {
+    let ps = pSystems[i];
+    ps.generateBelt();
+    ps.generate();
   }
+
 }
 
 function draw() {
-  background(0,20)
+  background(0);
 
-  if(params.debugMode){
-    fill(255);
-    textSize(20);
-    text(nf(frameRate(),2,0),100,100);
+  for (let i = 0; i < pSystems.length; i++) {
+    let ps = pSystems[i];
+    ps.displayBelt();
+
+    ps.display();
   }
 
-  if(isDone==false){
+
+  //generate Orbitals
+  // let o1 = new Orbitals(width/2,height/2,70);
+  // o1.display();
+  // let o2 = new Orbitals(width/2,height/2,100);
+  // o2.display();
+  // let o3 = new Orbitals(width/2,height/2,130);
+  // o3.display();
+  // let o4 = new Orbitals(width/2,height/2,160);
+  // o4.display();
+  // let o5 = new Orbitals(width/2,height/2,250);
+  // o5.display();
+  // let o6 = new Orbitals(width/2,height/2,340);
+  // o6.display();
+  // let o7 = new Orbitals(width/2,height/2,420);
+  // o7.display();
+  // let o8 = new Orbitals(width/2,height/2,450);
+  // o8.display();
+
+
+  // let p;
+  // if (random(1) < 0.5) {
+  //   p = new RectShape( new p5.Vector(width/2, height/2), color(200, 255, 10) );
+  // } else {
+  //   p = new TriShape( new p5.Vector(width/2, height/2), color(200, 0, 100) );
+  // }
+  //
+  //
+  // p.setVelocity( new p5.Vector(random(-3,3),random(-3,3)) );
+  // particles.push( p );
+  //
+  // // update and display
+  // for (let i = 0; i < particles.length; i++) {
+  //   let p = particles[i];
+  //   p.update();
+  //   p.updateRotation();
+  //   p.display();
+  // }
+  //
+
+}
+
+class Orbitals {
+  constructor(x,y,r) {
+    this.x = x;
+    this.y = y;
+    this.r = r;
+  }
+
+  display(){
     push();
-
-    let freq = frameCount * 0.05;
-    let amp = 30;
-    let sinValue = sin(freq) * amp;
-    let r =70
-
     noFill();
-    stroke(255);
-    strokeWeight(4);
-    ellipse(width/2,height/2,r+sinValue,r+sinValue);
-    pop();
-
-    if((mouseX>width/2-50&&mouseX<width/2+50)&&(mouseY>height/2-50&&mouseY<height/2+50)&&mousePressed){
-      isDone = true;
-    }
-  }
-
-  if(stage<6){
-    song1.play();
-  }
-
-  if(isDone==true){
-    core = new Particle(width/2,height/2,400);
-    let centerPos = createVector(width/2,height/2)
-
-    // ADD electrons
-    for(let a=0; a<electrons.length; a++){
-      let e = electrons[a];
-
-      e.attractTo( core.pos );
-      e.update();
-      e.display();
-
-    }
-
-    // ADD Neutron
-    for(let i = 0; i< 10; i++){
-      neutrons.push(new Neutron(random(width/2-30,width/2+30),random(height/2-10,height/2+10),random(5,10)));
-    }
-
-    for(let i=0; i < 10; i++){
-      let n = neutrons[i];
-
-      n.vel = createVector(random(-1,1),random(-1,1));
-      n.applySimpleAttraction(core);
-      n.update();
-      n.display();
-    }
-
-    // ADD protrons
-    for(let i = 0; i< 10; i++){
-      protrons.push(new Protron(random(width/2-20,width/2+20),random(height/2-20,height/2+20),random(20,30)));
-    }
-
-    for(let i=0; i < 10; i++){
-      let p = protrons[i];
-
-      p.vel = createVector(random(-1,1),random(-1,1));
-      p.applySimpleAttraction(core);
-      p.update();
-      p.display();
-    }
-
-    //First layer particle sphere
-    if (stage>6) {
-      song2.play();
-      for(let a=0; a<particles1.length; a++) {
-        let p1 = particles1[a];
-
-        p1.applySimpleAttraction( core, 7 );
-        p1.update();
-        p1.display();
-      }
-
-      //Second layer particle sphere
-
-      for(let a=0; a<particles2.length; a++) {
-        let p2 = particles2[a];
-
-        p2.applySimpleAttraction( core );
-        p2.update();
-        p2.display();
-      }
-    }
-    // for(let a=0; a<particles1.length; a++) {
-    //   let p1 = particles1[a];
-    //
-    //   p1.applySimpleAttraction( core, 7 );
-    //   p1.update();
-    //   p1.display();
-    // }
-    //
-    // //Second layer particle sphere
-    //
-    // for(let a=0; a<particles2.length; a++) {
-    //   let p2 = particles2[a];
-    //
-    //   p2.applySimpleAttraction( core );
-    //   p2.update();
-    //   p2.display();
-    // }
-    //
-    //
-    // // ADD electrons
-    // for(let a=0; a<electrons.length; a++){
-    //   let e = electrons[a];
-    //
-    //   e.attractTo( core.pos );
-    //   e.update();
-    //   e.display();
-    //
-    // }
-
-  }
-}
-
-function mousePressed(){
-  stage += 1;
-  let e = new Electron(mouseX,mouseY,random(5,10));
-  //e.vel = createVector(random(-2,2),random(-2,2));
-
-  let vector = p5.Vector.sub(core.pos, e.pos);
-  // vector.rotate(PI/2); // 90 degree angle
-  if (random(1) < 0.5) {
-    if(random(1)< 0.5){
-      vector.rotate(PI/2);
-    }else {
-      vector.rotate(-PI/2);
-    }
-    vector.mult( params.angle );
-  } else {
-    if(random(1)< 0.5){
-      vector.rotate(PI/2);
-    }else {
-      vector.rotate(-PI/2);
-    }
-    vector.mult( params.angle );
-  }
-  e.vel = vector.copy();
-
-  electrons.push(e);
-}
-
-
-class Neutron {
-  constructor(x,y,m){
-    this.pos = createVector(x,y);
-    this.vel = createVector();
-    this.acc = createVector();
-    this.mass = m;
-  }
-  update(){
-    this.vel.add(this.acc);
-    this.pos.add(this.vel);
-    this.acc.mult(0);
-  }
-
-  applyForce(f){
-    let force = f.copy();
-    force.div(this.mass);
-    this.acc.add(force);
-  }
-
-  applySimpleAttraction(other) {
-    let f = p5.Vector.sub(other.pos, this.pos);
-    let distance = f.mag();
-    f.normalize();
-    f.mult(0.9); // play with this value!
-
-    // *** check this out! ***
-    // if (distance < other.rad) {
-    //   let adj = 30.0; // play with this value!
-    //   f.mult(-1 * adj);
-    // }
-
-    this.applyForce( f );
-  }
-
-  // applyGravitationalAttraction(other) {
-  //   let f = p5.Vector.sub(other.pos, this.pos);
-  //   let distance = f.mag(); // = this.pos.distance( other.pos );
-  //   let gMag = (C_GRAVITY * this.mass * other.mass) / (distance * distance); // mag
-  //   f.normalize(); // direction
-  //   f.mult(gMag);
-  //
-  //   // *** check this out! ***
-  //   if (distance < other.rad) {
-  //     let adj = 10.0; // play with this value!
-  //     f.mult(-1 * adj);
-  //   }
-  //
-  //   this.applyForce( f );
-  // }
-
-  display(){
-    push();
-    let amp, freq;
-    let strokeOpacity, centerOpacity;
-
-    strokeOpacity = 100;
-    centerOpacity = 20;
-
-    amp = random(8,12);
-    freq = frameCount * 0.08;
-    let cosValue = cos(freq) * amp;
-    // translate(this.pos.x, this.pos.y);
-    // fill(100,220,100);
-    // ellipse(0,0,10,10);
-    let opa1 = 255;
-    for(let r = 0; r<25; r+=1){
-      let colorR = map(r,0,20,255,100);
-      let colorG = map(r,0,20,255,180);
-      let colorB = map(r,0,20,255,100);
-      noFill();
-      strokeWeight(1);
-      stroke(colorR,colorG,colorB,opa1)
-      ellipse(this.pos.x, this.pos.y, r+cosValue,r+cosValue);
-      opa1 -= 9;
-    }
+    stroke(255,30);
+    strokeWeight(2);
+    ellipse(this.x,this.y,this.r * 2,this.r * 2);
     pop();
   }
 }
-
-class Protron {
-  constructor(x,y,m){
-    this.pos = createVector(x,y);
-    this.vel = createVector();
-    this.acc = createVector();
-    this.mass = m;
-    this.rad = m;
-  }
-  update(){
-    this.vel.add(this.acc);
-    this.pos.add(this.vel);
-    this.acc.mult(0);
-  }
-
-  applySimpleAttraction(other) {
-    let f = p5.Vector.sub(other.pos, this.pos);
-    let distance = f.mag();
-    f.normalize();
-    f.mult(0.9); // play with this value!
-
-    // *** check this out! ***
-    // if (distance > other.rad) {
-    //   let adj = 30.0; // play with this value!
-    //   f.mult(-1 * adj);
-    // }
-
-    this.applyForce( f );
-  }
-
-  // applyGravitationalAttraction(other) {
-  //   let f = p5.Vector.sub(other.pos, this.pos);
-  //   let distance = f.mag(); // = this.pos.distance( other.pos );
-  //   let gMag = (C_GRAVITY * this.mass * other.mass) / (distance * distance); // mag
-  //   f.normalize(); // direction
-  //   f.mult(gMag);
-  //
-  //   // *** check this out! ***
-  //   if (distance > other.rad) {
-  //     let adj = 10.0; // play with this value!
-  //     f.mult(-1 * adj);
-  //   }
-  //
-  //   this.applyForce( f );
-  // }
-
-  applyForce(f){
-    let force = f.copy();
-    force.div(this.mass);
-    this.acc.add(force);
-  }
-
-  applyRepulsion(other) {
-    let f = p5.Vector.sub(other.pos, this.pos);
-    let distance = f.mag();
-    let gMag = (C_GRAVITY * this.mass * other.mass) / (distance * distance*distance);
-    f.normalize();
-    f.mult(-gMag);
-    this.applyForce( f );
-  }
-
-
-
-  display(){
-    let amp, freq;
-    let strokeOpacity, centerOpacity;
-
-    strokeOpacity = 100;
-    centerOpacity = 20;
-
-    amp = random(5,10);
-    freq = frameCount * 0.05;
-    let sinValue = sin(freq) * amp;
-
-    push();
-    // translate(this.pos.x, this.pos.y);
-    // strokeWeight(1);
-    // stroke(140,100,100,strokeOpacity);
-    // fill(240,100,100,centerOpacity);
-    // ellipse(0,0,this.rad+sinValue,this.rad+sinValue);
-    let opa1 = 255;
-    for(let r = 0; r<25; r+=1){
-      let colorR = map(r,0,20,255,102);
-      let colorG = map(r,0,20,255,186);
-      let colorB = map(r,0,20,255,183);
-      noFill();
-      strokeWeight(1);
-      stroke(colorR,colorG,colorB,opa1)
-      ellipse(this.pos.x, this.pos.y, r+sinValue,r+sinValue);
-      opa1 -= 9;
-    }
-
-    pop();
-  }
-}
-
-
-
-class Electron{
-  constructor(x,y,m){
-    this.pos = createVector(x,y)
-    this.vel = createVector();
-    this.acc = createVector();
-    this.mass = m;
-    this.rad = m;
-    this.r = 255;
-    this.g = 255;
-    this.b = 255;
-  }
-
-  update(){
-    this.vel.add(this.acc);
-    this.pos.add(this.vel);
-    this.acc.mult(0);
-    //
-
-    this.vel.mult(1);
-    this.vel.limit(25);
-  }
-
-  attractTo(target) {
-  let f = p5.Vector.sub(target, this.pos);
-  //f.normalize(); // get the direction
-  //f.mult(1); // mag is now 5px.
-  f.mult(params.attraction);
-  this.applyForce( f );
-}
-
-// Simple Attraction testing: fail
-
-// applySimpleAttraction(other) {
-//   let f = p5.Vector.sub(other.pos, this.pos);
-//   let distance = f.mag();
-//   f.normalize();
-//   f.mult(0.2); // play with this value!
-//
-//   // *** check this out! ***
-//   if (distance < other.rad) {
-//     // let adj = 30.0; // play with this value!
-//     f.mult(-1 * params.eAdj);
-//   }
-//
-//   this.applyForce( f );
-// }
-
-// GravitationalAttraction testing: fail
-
-// applyGravitationalAttraction(other) {
-//   let f = p5.Vector.sub(other.pos, this.pos);
-//   let distance = f.mag(); // = this.pos.distance( other.pos );
-//   let gMag = (params.k_value * this.mass * other.mass) / (distance * distance); // mag
-//   f.normalize(); // direction
-//   f.mult(gMag);
-//
-//   // *** check this out! ***
-//   if (distance < other.rad/5) {
-//     // let adj = 10.0; // play with this value!
-//     f.mult(-1 * params.eAdj);
-//   }
-//
-//   this.applyForce( f );
-// }
-
-
-
-  applyForce(f){
-    let force = f.copy();
-    force.div(this.mass);
-    this.acc.add(force);
-  }
-
-  display(){
-    push();
-    let opa1 = 255;
-    for(let r = 0; r<7; r+=1){
-      let colorR = map(r,0,20,230,180);
-      let colorG = map(r,0,20,150,100);
-      let colorB = map(r,0,20,150,100);
-      noFill();
-      strokeWeight(1);
-      stroke(colorR,colorG,colorB,opa1)
-      ellipse(this.pos.x, this.pos.y, r,r);
-      opa1 -= 9;
-    }
-
-    pop();
-  }
-
-}
-
 
 
 class Particle {
-  constructor(x, y, m) {
-    this.pos = createVector(x, y);
-    this.vel = createVector();
-    this.acc = createVector();
-    this.mass = m;
-    this.rad = m;
+  constructor(_pos) {
+    this.pos = _pos.copy();
+    this.vel = new p5.Vector();
+    this.acc = new p5.Vector();
+    this.mass = random(1, 3);
+    this.rad = this.mass;
   }
-
-  applySimpleAttraction(other, adj) {
-    if (adj == undefined || adj < 1) {
-      adj = 1;
-    }
-    let f = p5.Vector.sub(other.pos, this.pos);
-    let distance = f.mag();
-    f.normalize();
-    f.mult(0.5); // play with this value!
-
-    // *** check this out! ***
-
-    if (distance < other.rad/adj) {
-
-      let max = other.rad/adj;
-      let range = params.range; //0.3 0.4 0.5
-      let mag = map(distance, max, max * 0.6, -range/2, range);
-      let value = random(mag - range, mag + range);
-
-      //let range = 5;
-      //let mag = map(distance, max, max * 0.6, -range/2, range);
-      //let freqX = frameCount * 0.005 + this.pos.x * 0.01;
-      //let freqY = frameCount * 0.005 + this.pos.y * 0.01;
-      //let value = noise(freqX, freqY) * mag + random(-mag, mag)*0.5;
-
-      f.mult(-1 * value * params.adj);
-    }
-
-
-    this.applyForce( f );
+  setVelocity( _vel ) {
+    this.vel = _vel.copy();
+    return this; // ***
   }
-
-
+  updateRotation() {}
   update() {
+    // pos
     this.vel.add(this.acc);
     this.pos.add(this.vel);
-    this.acc.mult(0);
+    // this.acc.mult(0);
 
-    //
-    this.vel.mult(0.97);
+    // size
+    this.rad = this.mass;
   }
-  applyForce(f) {
-    let force = f.copy();
-    force.div(this.mass);
-    this.acc.add( force );
-  }
-
   display() {
-    let opacity = map(cos(frameCount*0.05),-1,1,30,100);
-
     push();
-    translate(this.pos.x, this.pos.y);
+    fill(255);
     noStroke();
-    fill(180,opacity);
-    ellipse(0, 0, this.rad*2, this.rad*2);
+    ellipse(this.pos.x, this.pos.y, this.rad*2, this.rad*2);
     pop();
   }
 }
+
+class Sun extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(255,100,100);
+    noStroke();
+    ellipse(0,0,80,80)
+    pop();
+  }
+}
+
+
+class Mercury extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(219,206,202);
+    noStroke();
+    ellipse(0,0,5,5)
+    pop();
+  }
+}
+
+class Venus extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(187,183,171);
+    noStroke();
+    ellipse(0,0,10,10)
+    pop();
+  }
+}
+
+class Earth extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(107,147,214);
+    noStroke();
+    ellipse(0,0,12,12)
+    pop();
+  }
+}
+
+class Mars extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(193,68,14);
+    noStroke();
+    ellipse(0,0,7,7)
+    pop();
+  }
+}
+
+class Jupiter extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(200,139,58);
+    noStroke();
+    ellipse(0,0,35,35)
+    pop();
+  }
+}
+
+class Saturn extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(164,155,14);
+    noStroke();
+    ellipse(0,0,30,30)
+    fill(197,171,110);
+    ellipse(0,0,60,15);
+    pop();
+  }
+}
+
+class Uranus extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(213,251,252);
+    noStroke();
+    ellipse(0,0,20,20)
+    pop();
+  }
+}
+
+class Neptune extends Particle {
+  constructor(_pos) {
+    super(_pos);
+  }
+
+  display(){
+    push();
+    translate(this.pos.x,this.pos.y);
+    fill(63,84,186);
+    noStroke();
+    ellipse(0,0,20,20)
+    pop();
+  }
+}
+
+class Belt {
+  constructor(x,y,r) {
+    this.x = x;
+    this.y = y;
+    this.r = r;
+  }
+
+  display(){
+    push();
+    translate(width/2,height/2);
+    fill(255);
+    noStroke();
+    ellipse(this.x,this.y,this.r,this.r);
+    pop();
+  }
+}
+
+class ParticleSystem {
+  constructor(x, y) {
+    this.pos = new p5.Vector(x, y);
+    this.particles = [];
+    this.belts = [];
+    // this.clr = color(random(255),random(255),random(255));
+    // this.scl = random(0.8, 1.5);
+  }
+  // updatePosition(x, y) {
+  //   this.pos = new p5.Vector(x, y);
+  // }
+  generateBelt(){
+    for (let i = 0; i < 300; i++) {
+      let x = sin(i)*random(180,220);
+      let y = cos(i)*random(180,220);
+      let r = random(1,3)
+      this.belts.push(new Belt(x,y,r) ) ;
+    }
+
+    for (let i = 0; i < 600; i++) {
+      let x = sin(i)*random(470,500);
+      let y = cos(i)*random(470,500);
+      let r = random(1,3)
+      this.belts.push(new Belt(x,y,r) ) ;
+    }
+  }
+
+  displayBelt(){
+    for (let i = 0; i < this.belts.length; i++) {
+      let b = this.belts[i];
+      b.display();
+    }
+
+    for (let i = 0; i < this.belts.length; i++) {
+      let b = this.belts[i];
+      b.display();
+    }
+  }
+
+  generate() {
+    // let p = new Particle( new p5.Vector(0, 0) );
+    //generate Orbitals
+    this.particles.push( new Orbitals(width/2,height/2,70) );
+    this.particles.push( new Orbitals(width/2,height/2,100) );
+    this.particles.push( new Orbitals(width/2,height/2,130) );
+    this.particles.push( new Orbitals(width/2,height/2,160) );
+    this.particles.push( new Orbitals(width/2,height/2,250) );
+    this.particles.push( new Orbitals(width/2,height/2,340) );
+    this.particles.push( new Orbitals(width/2,height/2,420) );
+    this.particles.push( new Orbitals(width/2,height/2,450) );
+
+    // genetate planet
+    //SUN
+    this.particles.push( new Sun( new p5.Vector(width/2, height/2) ) );
+
+    //Mercury
+    this.particles.push( new Mercury( new p5.Vector(width/2+70, height/2) ) );
+
+    //VENUS
+    this.particles.push( new Venus( new p5.Vector(width/2+130, height/2) ) );
+
+    //EARTH
+    this.particles.push( new Earth( new p5.Vector(width/2+130, height/2) ) );
+
+    //MARS
+    this.particles.push( new Mars( new p5.Vector(width/2+160, height/2) ) );
+
+    //JUPITER
+    this.particles.push( new Jupiter( new p5.Vector(width/2+250, height/2) ) );
+
+    //SATURN
+    this.particles.push( new Saturn( new p5.Vector(width/2+340, height/2) ) );
+
+    // URANUS
+    this.particles.push( new Uranus( new p5.Vector(width/2+420, height/2) ) );
+
+    // NEPTUNE
+    this.particles.push( new Neptune( new p5.Vector(width/2+450, height/2) ) );
+
+
+
+
+
+    // p.setVelocity( new p5.Vector(random(-4,4),random(-4,4)) );
+
+  }
+  // limitParticles( num ) {
+  //   // reduce the number of particles if it's done
+  //   for (let i = this.particles.length-1; i >= 0; i--) {
+  //     let p = this.particles[i];
+  //     if (p.isDone) {
+  //       this.particles.splice(i, 1);
+  //     }
+  //   }
+    // // limit the number of the particles
+    // while (this.particles.length > num) {
+    //   this.particles.splice(0, 1);
+    // }
+  // }
+
+  display() {
+    push();
+    //translate(this.pos.x, this.pos.y);
+    //rotate(frameCount * 0.01);
+
+    // update and display
+    // noStroke();
+    // fill(this.clr);
+    for (let i = 0; i < this.particles.length; i++) {
+      let p = this.particles[i];
+      // p.slowDown();
+      // p.update();
+      // p.live();
+      p.display();
+    }
+    pop();
+  }
+}
+
+// class TriShape extends Particle {
+//   constructor(_pos, _color) {
+//     super(_pos); // call the superclass' constructor!
+//     this.clr = _color;
+//     this.angle = 0;
+//     this.angleVel = random(-0.05, 0.05);
+//   }
+//   updateRotation() {
+//     this.angle += this.angleVel;
+//   }
+//   // this overrides the superclass display function - polymorphism!
+//   display() {
+//     push();
+//     translate(this.pos.x, this.pos.y);
+//     rotate(this.angle);
+//     fill(this.clr);
+//     noStroke();
+//     triangle(10, 0, -10, 7, -10, -7);
+//     pop();
+//   }
+// }
+//
+// class RectShape extends Particle {
+//   constructor(_pos, _color) {
+//     super(_pos); // call the superclass' constructor!
+//     this.clr = _color;
+//     this.angle = 0;
+//     this.angleVel = random(-0.05, 0.05);
+//   }
+//   updateRotation() {
+//     this.angle += this.angleVel;
+//   }
+//   // this overrides the superclass display function - polymorphism!
+//   display() {
+//     push();
+//     translate(this.pos.x, this.pos.y);
+//     rotate(this.angle);
+//     fill(this.clr);
+//     noStroke();
+//     rect(0, 0, this.rad*2, this.rad*2);
+//     pop();
+//   }
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// :D

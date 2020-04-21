@@ -1,0 +1,17 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+#mycanvas{
+  position: absolute;
+  /* left: -200px; */
+  top:-3000px;
+}
+
+#startbt{
+  position: absolute;
+  top: 6000px;
+  left: 1500px;
+  font-size: 40px;
+}
