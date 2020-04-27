@@ -1,20 +1,11 @@
 let particles = [];
 let pSystems = [];
-let belts1 = [];
-let belts2 = [];
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   background(0);
 
-  // draw galaxy background
-  for (let i = 0; i < 500; i++) {
-    push();
-    let size = random(1,3);
-    fill(random(255),random(255),random(255),random(20,60));
-    ellipse(random(windowWidth),random(windowHeight),size * 2, size * 2);
-    pop();
-  }
 
   pSystems.push( new ParticleSystem(0,0) );
 
@@ -24,38 +15,18 @@ function setup() {
     ps.generateBelt();
     ps.generate();
   }
-
 }
 
 function draw() {
   background(0);
 
+
   for (let i = 0; i < pSystems.length; i++) {
     let ps = pSystems[i];
     ps.displayBelt();
-
     ps.display();
+    // ps.update();
   }
-
-
-  //generate Orbitals
-  // let o1 = new Orbitals(width/2,height/2,70);
-  // o1.display();
-  // let o2 = new Orbitals(width/2,height/2,100);
-  // o2.display();
-  // let o3 = new Orbitals(width/2,height/2,130);
-  // o3.display();
-  // let o4 = new Orbitals(width/2,height/2,160);
-  // o4.display();
-  // let o5 = new Orbitals(width/2,height/2,250);
-  // o5.display();
-  // let o6 = new Orbitals(width/2,height/2,340);
-  // o6.display();
-  // let o7 = new Orbitals(width/2,height/2,420);
-  // o7.display();
-  // let o8 = new Orbitals(width/2,height/2,450);
-  // o8.display();
-
 
   // let p;
   // if (random(1) < 0.5) {
@@ -80,19 +51,40 @@ function draw() {
 }
 
 class Orbitals {
-  constructor(x,y,r) {
+  constructor(x,y,rad,r,g,b) {
     this.x = x;
     this.y = y;
+    this.rad = rad;
     this.r = r;
+    this.g = g;
+    this.b = b;
   }
+
+  update(){}
 
   display(){
     push();
     noFill();
-    stroke(255,30);
-    strokeWeight(2);
-    ellipse(this.x,this.y,this.r * 2,this.r * 2);
+    stroke(this.r,this.g,this.b,40);
+    strokeWeight(3.5);
+    ellipse(this.x,this.y,this.rad * 2,this.rad * 2);
     pop();
+  }
+}
+
+class Galaxy{
+  constructor(x,y){
+    this.x = x;
+    this.y = y;
+    this.rad = random(3,5);
+    this.r = random(255);
+    this.g = random(255);
+    this.b = random(255);
+  }
+
+  display(){
+    fill(this.r,this.g,this.b,random(80,100));
+    ellipse(this.x,this.y,this.rad,this.rad);
   }
 }
 
@@ -115,7 +107,7 @@ class Particle {
     this.vel.add(this.acc);
     this.pos.add(this.vel);
     // this.acc.mult(0);
-
+    this.angle+=this.speed;
     // size
     this.rad = this.mass;
   }
@@ -147,14 +139,21 @@ class Sun extends Particle {
 class Mercury extends Particle {
   constructor(_pos) {
     super(_pos);
+    this.orbitR = 70;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(this.pos.x,this.pos.y);
+    translate(width/2,height/2);
     fill(219,206,202);
     noStroke();
-    ellipse(0,0,5,5)
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),5,5)
     pop();
   }
 }
@@ -162,14 +161,21 @@ class Mercury extends Particle {
 class Venus extends Particle {
   constructor(_pos) {
     super(_pos);
+    this.orbitR = 100;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(this.pos.x,this.pos.y);
+    translate(width/2,height/2);
     fill(187,183,171);
     noStroke();
-    ellipse(0,0,10,10)
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),10,10)
     pop();
   }
 }
@@ -177,14 +183,21 @@ class Venus extends Particle {
 class Earth extends Particle {
   constructor(_pos) {
     super(_pos);
+    this.orbitR = 130;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(this.pos.x,this.pos.y);
+    translate(width/2,height/2);
     fill(107,147,214);
     noStroke();
-    ellipse(0,0,12,12)
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),12,12)
     pop();
   }
 }
@@ -192,14 +205,21 @@ class Earth extends Particle {
 class Mars extends Particle {
   constructor(_pos) {
     super(_pos);
+    this.orbitR = 160;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(this.pos.x,this.pos.y);
+    translate(width/2,height/2);
     fill(193,68,14);
     noStroke();
-    ellipse(0,0,7,7)
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),7,7)
     pop();
   }
 }
@@ -207,14 +227,21 @@ class Mars extends Particle {
 class Jupiter extends Particle {
   constructor(_pos) {
     super(_pos);
+    this.orbitR = 250;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(this.pos.x,this.pos.y);
+    translate(width/2,height/2);
     fill(200,139,58);
     noStroke();
-    ellipse(0,0,35,35)
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),35,35)
     pop();
   }
 }
@@ -222,16 +249,23 @@ class Jupiter extends Particle {
 class Saturn extends Particle {
   constructor(_pos) {
     super(_pos);
+    this.orbitR = 340;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(this.pos.x,this.pos.y);
+    translate(width/2,height/2);
     fill(164,155,14);
     noStroke();
-    ellipse(0,0,30,30)
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),30,30)
     fill(197,171,110);
-    ellipse(0,0,60,15);
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),60,15);
     pop();
   }
 }
@@ -239,14 +273,21 @@ class Saturn extends Particle {
 class Uranus extends Particle {
   constructor(_pos) {
     super(_pos);
+    this.orbitR = 420;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(this.pos.x,this.pos.y);
+    translate(width/2,height/2);
     fill(213,251,252);
     noStroke();
-    ellipse(0,0,20,20)
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),20,20)
     pop();
   }
 }
@@ -254,14 +295,21 @@ class Uranus extends Particle {
 class Neptune extends Particle {
   constructor(_pos) {
     super(_pos);
+    this.orbitR = 450;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(this.pos.x,this.pos.y);
+    translate(width/2,height/2);
     fill(63,84,186);
     noStroke();
-    ellipse(0,0,20,20)
+    ellipse(this.orbitR*cos(this.angle),this.orbitR*sin(this.angle),20,20)
     pop();
   }
 }
@@ -271,11 +319,17 @@ class Belt {
     this.x = x;
     this.y = y;
     this.r = r;
+    this.angle = 0;
+    this.speed = 0.05;
+  }
+
+  update(){
+    this.angle += this.speed;
   }
 
   display(){
     push();
-    translate(width/2,height/2);
+    //translate(width/2,height/2);
     fill(255);
     noStroke();
     ellipse(this.x,this.y,this.r,this.r);
@@ -311,28 +365,43 @@ class ParticleSystem {
   }
 
   displayBelt(){
+    push();
+    translate(width/2,height/2);
+    rotate(frameCount/500);
     for (let i = 0; i < this.belts.length; i++) {
       let b = this.belts[i];
-      b.display();
-    }
 
-    for (let i = 0; i < this.belts.length; i++) {
-      let b = this.belts[i];
       b.display();
     }
+    pop();
+
+    push();
+    translate(width/2,height/2);
+    rotate(frameCount/500);
+    for (let i = 0; i < this.belts.length; i++) {
+      let b = this.belts[i];
+
+      b.display();
+    }
+    pop();
   }
 
   generate() {
     // let p = new Particle( new p5.Vector(0, 0) );
+    //draw Galaxy
+    for (let i = 0; i < 300; i++) {
+      this.particles.push(new Galaxy(random(windowWidth),random(windowHeight)));
+    }
+
     //generate Orbitals
-    this.particles.push( new Orbitals(width/2,height/2,70) );
-    this.particles.push( new Orbitals(width/2,height/2,100) );
-    this.particles.push( new Orbitals(width/2,height/2,130) );
-    this.particles.push( new Orbitals(width/2,height/2,160) );
-    this.particles.push( new Orbitals(width/2,height/2,250) );
-    this.particles.push( new Orbitals(width/2,height/2,340) );
-    this.particles.push( new Orbitals(width/2,height/2,420) );
-    this.particles.push( new Orbitals(width/2,height/2,450) );
+    this.particles.push( new Orbitals(width/2,height/2,70,219,206,202));
+    this.particles.push( new Orbitals(width/2,height/2,100,219,206,202));
+    this.particles.push( new Orbitals(width/2,height/2,130,219,206,202));
+    this.particles.push( new Orbitals(width/2,height/2,160,193,68,14));
+    this.particles.push( new Orbitals(width/2,height/2,250,193,68,14));
+    this.particles.push( new Orbitals(width/2,height/2,340,197,171,110));
+    this.particles.push( new Orbitals(width/2,height/2,420,213,251,252));
+    this.particles.push( new Orbitals(width/2,height/2,450,63,84,186));
 
     // genetate planet
     //SUN
@@ -342,7 +411,7 @@ class ParticleSystem {
     this.particles.push( new Mercury( new p5.Vector(width/2+70, height/2) ) );
 
     //VENUS
-    this.particles.push( new Venus( new p5.Vector(width/2+130, height/2) ) );
+    this.particles.push( new Venus( new p5.Vector(width/2+100, height/2) ) );
 
     //EARTH
     this.particles.push( new Earth( new p5.Vector(width/2+130, height/2) ) );
@@ -385,7 +454,7 @@ class ParticleSystem {
 
   display() {
     push();
-    //translate(this.pos.x, this.pos.y);
+    translate(this.pos.x, this.pos.y);
     //rotate(frameCount * 0.01);
 
     // update and display
@@ -394,7 +463,7 @@ class ParticleSystem {
     for (let i = 0; i < this.particles.length; i++) {
       let p = this.particles[i];
       // p.slowDown();
-      // p.update();
+      p.update();
       // p.live();
       p.display();
     }
@@ -445,33 +514,6 @@ class ParticleSystem {
 //     pop();
 //   }
 // }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 // :D
