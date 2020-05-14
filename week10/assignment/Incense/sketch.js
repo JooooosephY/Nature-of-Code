@@ -15,6 +15,8 @@ function setup() {
   for (let i=0; i<1; i++) {
     incenses.push( new Incense(width/2, height) );
   }
+
+  noCursor();
 }
 
 function draw() {
@@ -38,7 +40,7 @@ function draw() {
 
       let index = c + r * cols; //let index = x + y * width;
 
-      let angle = angleFlowField * 5.0 + angleMouse * 1.0;
+      let angle = angleFlowField * 2.0 + angleMouse * 1.0;
       angles[index] = angle;
 
 
@@ -60,7 +62,7 @@ function draw() {
     let inc = incenses[i];
 
     inc.generateSmoke();
-    inc.display();
+    // inc.display();
   }
 
   // update and display the vehicles
@@ -87,7 +89,7 @@ class Smoke {
     this.acc = createVector();
     this.angle = 0;
 
-    this.maxSpeed = 1;    // max desired vel
+    this.maxSpeed = 2;    // max desired vel
     this.maxForce = 0.05;  // max steering force
 
     this.detectRad = 80;
@@ -119,20 +121,16 @@ class Smoke {
 
   reappear() {
     if (this.pos.x < 0) {
-      this.pos.x = 0;
-      this.vel.x = - this.vel.x;
+      this.pos.x = width;
     }
     else if (this.pos.x > width) {
-      this.pos.x = width;
-      this.vel.x = - this.vel.x;
+      this.pos.x = 0;
     }
     if (this.pos.y < 0) {
-      this.pos.y = 0;
-      this.vel.y = - this.vel.y;
+      this.pos.y = height;
     }
     else if (this.pos.y > height) {
-      this.pos.y = height;
-      this.vel.y = - this.vel.y;
+      this.pos.y = 0;
     }
   }
 
